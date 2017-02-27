@@ -1,0 +1,11 @@
+#!/bin/bash
+# configure-project --- Configure repository dependencies for building and tests.
+set -e
+
+cd $PROJ_DIR
+
+echo "Updating (installing) dependencies via npm ..."
+npm update
+
+# Display package version state
+npm outdated

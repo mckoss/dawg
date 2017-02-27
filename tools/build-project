@@ -1,0 +1,15 @@
+#!/bin/bash
+# build-project --- Build the project from sources.
+set -e
+export TOOLS_DIR="$(unset CDPATH; cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+source $TOOLS_DIR/use
+
+cd $PROJ_DIR
+
+echo "Linting sources ..."
+tslint --format=verbose src/*.ts src/test/*.ts
+
+rm -rf lib
+
+echo -e "\nCompiling TypeScript files ..."
+tsc

@@ -1,0 +1,14 @@
+#!/bin/bash
+# run-tests --- Run unit tests in mocha - passing commandline options.
+
+set -e
+
+cd $PROJ_DIR
+
+if [[ ! -d "node_modules" ]]; then
+    echo "Project not yet configured to run tests."
+    echo "Run: configure-project command."
+    exit 1
+fi
+
+mocha lib/test --ui tdd --require "source-map-support/register" "$@"

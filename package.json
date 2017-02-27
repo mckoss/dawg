@@ -1,0 +1,34 @@
+{
+  "name": "dawg",
+  "version": "2.0.0",
+  "description": "Directed Acyclic Word Graph",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "tools/run-tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mckoss/dawg.git"
+  },
+  "keywords": [
+    "search",
+    "trie",
+    "dawg"
+  ],
+  "author": "Mike Koss <mike@mckoss.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mckoss/dawg/issues"
+  },
+  "homepage": "https://github.com/mckoss/dawg#readme",
+  "devDependencies": {
+    "@types/chai": "^3.4.35",
+    "@types/mocha": "^2.2.39",
+    "@types/node": "^7.0.5",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "source-map-support": "^0.4.11",
+    "tslint": "^4.5.0",
+    "typescript": "^2.2.1"
+  }
+}
