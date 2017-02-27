@@ -12,7 +12,6 @@
     "member-ordering": false,
     "object-literal-sort-keys": false,
 
-    "no-var-keyword": false,
     "object-literal-shorthand": false,
     "only-arrow-functions": false,
     "align": false,
@@ -24,6 +23,7 @@
     "no-string-literal": false,
     "switch-default": false,
     "typedef-whitespace": false,
-    "prefer-for-of": false
+    "prefer-for-of": false,
+    "forin": false
   }
 }
