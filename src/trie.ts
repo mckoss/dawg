@@ -372,12 +372,11 @@ export class Trie {
   // with a (relative!) line number of the node that string references.
   // Terminal strings (those without child node references) are
   // separated by ',' characters.
-  pack() {
+  pack(): string {
     let self = this;
     let nodes: Node[] = [];
     let nodeCount: number;
-    let syms: {[i: number]: string} = {};
-    let symCount: number;
+    let syms: {[i: string]: string} = {};
     let pos = 0;
 
     // Make sure we've combined all the common suffixes
@@ -422,13 +421,13 @@ export class Trie {
     }
 
     // Topological sort into nodes array
-    function numberNodes(node) {
+    function numberNodes(node: Node) {
       if (node._n !== undefined) {
         return;
       }
       let props = node.props(true);
       for (let i = 0; i < props.length; i++) {
-        numberNodes(node[props[i]]);
+        numberNodes(node.child(props[i]) as Node);
       }
       node._n = pos++;
       nodes.unshift(node);
@@ -437,98 +436,106 @@ export class Trie {
     let histAbs = new Histogram();
     let histRel = new Histogram();
 
-    function analyzeRefs(node) {
+    function analyzeRefs(node: Node) {
       if (self.visited(node)) {
         return;
       }
       let props = node.props(true);
       for (let i = 0; i < props.length; i++) {
         let prop = props[i];
-        let ref = node._n - node[prop]._n - 1;
+        let child = node.child(prop) as Node;
+        let ref = node._n - child._n - 1;
         // Count the number of single-character relative refs
         if (ref < ptrie.BASE) {
           histRel.add(ref);
         }
         // Count the number of characters saved by converting an absolute
         // reference to a one-character symbol.
-        histAbs.add(node[prop]._n, ptrie.toAlphaCode(ref).length - 1);
-        analyzeRefs(node[prop]);
+        histAbs.add(child._n, ptrie.toAlphaCode(ref).length - 1);
+        analyzeRefs(child);
       }
     }
 
-    function symbolCount() {
-      histAbs = histAbs.highest(ptrie.BASE);
+    function symbolCount(): [number, [string, number][]] {
+      let topNodes = histAbs.highest(ptrie.BASE);
       let savings = [];
       savings[-1] = 0;
       let best = 0;
       let count = 0;
       let defSize = 3 + ptrie.toAlphaCode(nodeCount).length;
       for (let sym = 0; sym < ptrie.BASE; sym++) {
-        if (histAbs[sym] === undefined) {
+        if (topNodes[sym] === undefined) {
           break;
         }
         // Cumulative savings of:
         //   saved characters in refs
         //   minus definition size
         //   minus relative size wrapping to 2 digits
-        savings[sym] = histAbs[sym][1] - defSize -
+        savings[sym] = topNodes[sym][1] - defSize -
           histRel.countOf(ptrie.BASE - sym - 1) +
           savings[sym - 1];
         console.log("savings[" + sym + "] " + savings[sym] + ' = ' +
                     savings[sym - 1] + ' +' +
-                    histAbs[sym][1] + ' - ' + defSize + ' - ' +
+                    topNodes[sym][1] + ' - ' + defSize + ' - ' +
                     histRel.countOf(ptrie.BASE - sym - 1) + ')');
         if (savings[sym] >= best) {
           best = savings[sym];
           count = sym + 1;
         }
       }
-      return count;
+      return [count, topNodes];
     }
 
-    numberNodes(this.root, 0);
+    numberNodes(this.root);
     nodeCount = nodes.length;
 
     this.prepDFS();
     analyzeRefs(this.root);
-    symCount = symbolCount();
+
+    let [symCount, topNodes] = symbolCount();
     let symDefs = [];
+
     for (let sym = 0; sym < symCount; sym++) {
-      syms[histAbs[sym][0]] = ptrie.toAlphaCode(sym);
+      syms[topNodes[sym][0]] = ptrie.toAlphaCode(sym);
     }
 
+    let nodeLines: string[] = [];
+
     for (let i = 0; i < nodeCount; i++) {
-      nodes[i] = nodeLine(nodes[i]);
+      nodeLines[i] = nodeLine(nodes[i]);
     }
 
     // Prepend symbols
-    for (sym = symCount - 1; sym >= 0; sym--) {
-      nodes.unshift(ptrie.toAlphaCode(sym) + ':' +
-                    ptrie.toAlphaCode(nodeCount - histAbs[sym][0] - 1));
+    for (let sym = symCount - 1; sym >= 0; sym--) {
+      nodeLines.unshift(ptrie.toAlphaCode(sym) + ':' +
+                        ptrie.toAlphaCode(nodeCount -
+                                          parseInt(topNodes[sym][0], 10) - 1));
     }
 
-    return nodes.join(ptrie.NODE_SEP);
+    return nodeLines.join(ptrie.NODE_SEP);
   }
-});
+}
 
-function commonPrefix(w1, w2) {
+function commonPrefix(w1: string, w2: string) {
+  let i: number;
+
   let maxlen = Math.min(w1.length, w2.length);
-  for (let i = 0; i < maxlen && w1[i] === w2[i]; i++) {/*_*/}
+
+  for (i = 0; i < maxlen && w1[i] === w2[i]; i++) {/*_*/}
+
   return w1.slice(0, i);
 }
 
-function Histogram() {
-  this.counts = {};
-}
+class Histogram {
+  counts: {[sym: number]: number} = {};
 
-Histogram.methods({
-  init(sym) {
+  init(sym: number) {
     if (this.counts[sym] === undefined) {
       this.counts[sym] = 0;
     }
   }
 
-  add(sym, n) {
+  add(sym: number, n?: number) {
     if (n === undefined) {
       n = 1;
     }
@@ -536,7 +543,7 @@ Histogram.methods({
     this.counts[sym] += n;
   }
 
-  change(symNew, symOld, n) {
+  change(symNew: number, symOld: number, n?: number) {
     if (n === undefined) {
       n = 1;
     }
@@ -544,28 +551,38 @@ Histogram.methods({
     this.add(symNew, n);
   }
 
-  countOf(sym) {
+  countOf(sym: number): number {
     this.init(sym);
     return this.counts[sym];
   }
 
-  highest(top) {
-    sorted = [];
-    for (let sym in this.counts) {
-      sorted.push([sym, this.counts[sym]]);
-    }
-    sorted.sort(function (a, b) {
-      return b[1] - a[1];
-    });
-    if (top) {
-      sorted = sorted.slice(0, top);
-    }
-    return sorted;
+  highest(top: number): [string, number][] {
+    return sortByValues<number>(this.counts).slice(0, top);
   }
-});
+}
+
+function sortByValues<V>(o: {[p: string]: V}): [string, V][] {
+  let result: [string, V][] = [];
+
+  for (let key in o) {
+    result.push( [key, o[key]] );
+  }
+
+  result.sort(function (a: [string, V], b: [string, V]) {
+    if (b[1] < a[1]) {
+      return -1;
+    }
+    if (a[1] < b[1]) {
+      return 1;
+    }
+    return 0;
+  });
+
+  return result;
+}
 
 /* Sort elements and remove duplicates from array (modified in place) */
-function unique(a) {
+function unique<T>(a: T[]) {
   a.sort();
   for (let i = 1; i < a.length; i++) {
     if (a[i - 1] === a[i]) {
