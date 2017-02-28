@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import { PTrie, toAlphaCode, fromAlphaCode } from '../ptrie';
 
 suite("PTrie", () => {
-  test("PTrie", () => {
+  test("Export", () => {
     assert.isDefined(PTrie);
   });
 });
