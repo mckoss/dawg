@@ -40,6 +40,8 @@
 
 */
 import * as ptrie from './ptrie';
+import { Histogram } from './histogram';
+import { unique } from './util';
 
 class Node {
   '_c': number;
@@ -524,69 +526,4 @@ function commonPrefix(w1: string, w2: string) {
   for (i = 0; i < maxlen && w1[i] === w2[i]; i++) {/*_*/}
 
   return w1.slice(0, i);
-}
-
-class Histogram {
-  counts: {[sym: number]: number} = {};
-
-  init(sym: number) {
-    if (this.counts[sym] === undefined) {
-      this.counts[sym] = 0;
-    }
-  }
-
-  add(sym: number, n?: number) {
-    if (n === undefined) {
-      n = 1;
-    }
-    this.init(sym);
-    this.counts[sym] += n;
-  }
-
-  change(symNew: number, symOld: number, n?: number) {
-    if (n === undefined) {
-      n = 1;
-    }
-    this.add(symOld, -n);
-    this.add(symNew, n);
-  }
-
-  countOf(sym: number): number {
-    this.init(sym);
-    return this.counts[sym];
-  }
-
-  highest(top: number): [string, number][] {
-    return sortByValues<number>(this.counts).slice(0, top);
-  }
-}
-
-function sortByValues<V>(o: {[p: string]: V}): [string, V][] {
-  let result: [string, V][] = [];
-
-  for (let key in o) {
-    result.push( [key, o[key]] );
-  }
-
-  result.sort(function (a: [string, V], b: [string, V]) {
-    if (b[1] < a[1]) {
-      return -1;
-    }
-    if (a[1] < b[1]) {
-      return 1;
-    }
-    return 0;
-  });
-
-  return result;
-}
-
-/* Sort elements and remove duplicates from array (modified in place) */
-function unique<T>(a: T[]) {
-  a.sort();
-  for (let i = 1; i < a.length; i++) {
-    if (a[i - 1] === a[i]) {
-      a.splice(i, 1);
-    }
-  }
 }
