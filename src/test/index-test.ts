@@ -1,9 +1,13 @@
 import { assert } from 'chai';
 
-import { Trie } from '../index';
+import { Trie, PTrie } from '../index';
 
-suite("Trie", () => {
-  test("Constructor", () => {
+suite("Exports", () => {
+  test("Trie", () => {
     assert.isDefined(Trie);
+  });
+
+  test("PTrie", () => {
+    assert.isDefined(PTrie);
   });
 });
