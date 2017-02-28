@@ -19,4 +19,13 @@ suite("Histogram", () => {
       assert.deepEqual(hist.highest(), expect);
     });
   });
+
+  test("countOf", () => {
+    let hist = new Histogram();
+    assert.equal(hist.countOf(1), 0);
+    hist.add(1);
+    assert.equal(hist.countOf(1), 1);
+    hist.add(2);
+    assert.equal(hist.countOf(2), 1);
+  });
 });
