@@ -1,5 +1,6 @@
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
+ *           2017 Mike Koss
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,107 +15,78 @@
  * limitations under the License.
  */
 
-import * as util from '../util';
-import * as ast from '../ast';
-import * as logger from '../logger';
-
-export interface ObjectSpec {
+export interface LabeledSpec {
   label?: string;
   data: any;
   expect?: any;
 };
 
-export type ArraySpec = [any, any];
-
+export type PairSpec = [any, any];
 export type ValueSpec = any;
-
-export type Spec = ObjectSpec | ArraySpec | ValueSpec;
+export type Spec = LabeledSpec | PairSpec | ValueSpec;
 
 export type TestFunction = (data: any, expect: any, spec: Spec) => void;
 
 export type FormatFunction = (data: any) => string;
 
 /*
- * Run data drive test with tests is one of these formats:
- * [ { label: (opt) <string>, data: <input>, expect: (opt) <expected output> }, ... ]
- * [ [ <input>, <expected output> ], ... ]
- * [ scalar, ... ]
+ * Run data driven test with tests as and array of one the Spec formats.
  *
- * Calls testIt(data, expect) for each test.
+ * This function calls to assert each test.
  */
-export function dataDrivenTest(tests: Spec[], testIt: TestFunction, formatter = format) {
-  var data: any;
-  var expect: any;
-  var label: string;
+export function dataDrivenTest(tests: Spec[],
+                               testIt: TestFunction,
+                               formatter = format) {
+  let data: any;
+  let expect: any;
+  let label: string;
 
-  for (var i = 0; i < tests.length; i++) {
-    // Not Array or Object
+  for (let i = 0; i < tests.length; i++) {
+    // Must be a ValueSpec
     if (typeof tests[i] !== 'object') {
       label = formatter(tests[i]);
       data = tests[i];
       expect = undefined;
     } else {
+      // LabeledSpec ...
       data = tests[i].data;
-      if (data === undefined) {
+
+      // else PairSpec, ...
+      if (data === undefined && tests[i] instanceof Array) {
         data = tests[i][0];
       }
+
+      // else ValueSpec (where value is an Object)
       if (data === undefined) {
         data = tests[i];
       }
-      if (util.isType(data, 'object') && 'expect' in data) {
-        data = util.extend({}, data);
+
+      // Clean data of label and expect if there.
+      if (data instanceof Object && 'expect' in data) {
+        data = Object.assign({}, data);
         delete data.expect;
+        delete data.label;
       }
+
       expect = tests[i].expect || tests[i][1];
+
       label = tests[i].label;
       if (label === undefined) {
+        label = formatter(data);
         if (expect !== undefined) {
-          label = formatter(data) + " => " + formatter(expect);
-        } else {
-          label = formatter(data);
+          label += " => " + formatter(expect);
         }
       }
     }
 
-    setup(() => {
-      logger.reset();
-      logger.silent();
-    });
-    teardown(() => {
-      logger.reset();
-    });
     test(label, testIt.bind(undefined, data, expect, tests[i]));
   }
 }
 
+// Default formatting function to display values.
 function format(o: any): string {
-  switch (util.typeOf(o)) {
-  case 'regexp':
+  if (o instanceof RegExp) {
     return o.toString();
-  default:
-    return JSON.stringify(o);
   }
-}
-
-export function expFormat(x: any): string {
-  if (util.isType(x, 'array')) {
-    return '[' + x.map(expFormat).join(', ') + ']';
-  }
-  if (util.isType(x, 'object')) {
-    if ('type' in x) {
-      return ast.decodeExpression(x);
-    }
-    var result = '{';
-    var sep = '';
-    for (var prop in x) {
-      if (!x.hasOwnProperty(prop)) {
-        continue;
-      }
-      result += sep + expFormat(x[prop]);
-      sep = ', ';
-    }
-    result += '}';
-    return result;
-  }
-  return JSON.stringify(x);
+  return JSON.stringify(o);
 }
