@@ -1,17 +1,24 @@
 # A Directed Acyclic Word Graph implementation in TypeScript/JavaScript
 
-_Ported from [lookups](https://github.com/mckoss/lookups) for use in node._
+This library takes a dictionary of (ascii) words as input, and generates a compressed
+datastructure based on a [DAWG] (like a [Trie], but whose representation shares
+common suffixes as well as common prefixes).
+
+_Ported from my [2011 experiment: lookups](https://github.com/mckoss/lookups)_
 
 Inspired by several blog posts by John Resig:
 
-- [Dictionary Lookups in JavaScript]
-- [JavaScript Trie Performance Analysis]
-- [Revised JavaScript Dictionary Search]
+- [Dictionary Lookups in
+  JavaScript](http://ejohn.org/blog/dictionary-lookups-in-javascript/)
+- [JavaScript Trie Performance
+  Analysis](http://ejohn.org/blog/javascript-trie-performance-analysis/)
+- [Revised JavaScript Dictionary
+  Search](http://ejohn.org/blog/revised-javascript-dictionary-search/)
 
 You can try out hosted version of this software at:
 
-- [JavaScript Lookups]
-- [Unit Tests].
+- [JavaScript Lookups](http://lookups.pageforest.com/)
+- [Unit Tests](http://lookups.pageforest.com/test/test-runner.html)
 
 # Packed Trie Encoding Format
 
@@ -32,7 +39,23 @@ The corresponding Packed Trie string is:
     at0
     !s
 
-*';' characters have been replaced with newlines for clarity.*
+Visually, this looks like:
+
+![DAWG diagram](https://g.gravizo.com/g?
+digraph DAWG {
+  aize = "4, 4";
+  0 [label="start"]
+  1 [label=""]
+  2 [label="bat, cat, rat, dog"]
+  3 [label="bats, cats, rats, dogs"]
+  0 -> 1 [label="b"]
+  0 -> 1 [label="c"]
+  0 -> 2 [label="dog"]
+  0 -> 1 [label="r"]
+  1 -> 2 [label="at"]
+  2 -> 3 [label="s"]
+}
+)
 
 This [Trie] (actually, a [DAWG]) has 3 nodes. If we follow the path of
 "cats" through the Trie we get the squence:
@@ -45,6 +68,9 @@ Or 'dog':
 
     node 0. match 'dog': continue at node + 2
     node 2. nothing left to match - '!' indicates Found!
+
+_While there are conceptually 4 nodes in this [DAWG], we overload the terminal
+'s' in the 3rd node._
 
 ## Nodes
 
@@ -109,8 +135,3 @@ $ run-tests
 
   [Trie]: http://en.wikipedia.org/wiki/Trie
   [DAWG]: http://en.wikipedia.org/wiki/Directed_acyclic_word_graph
-  [JavaScript Lookups]: http://lookups.pageforest.com/
-  [Unit Tests]: http://lookups.pageforest.com/test/test-runner.html
-  [Dictionary Lookups in JavaScript]: http://ejohn.org/blog/dictionary-lookups-in-javascript/
-  [JavaScript Trie Performance Analysis]:  http://ejohn.org/blog/javascript-trie-performance-analysis/
-  [Revised JavaScript Dictionary Search]: http://ejohn.org/blog/revised-javascript-dictionary-search/
