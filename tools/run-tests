@@ -37,6 +37,6 @@ istanbul cover --print detail \
          lib/test "$@"
 
 # Open lcov coverage report in the browser (this probably only works on Mac).
-if [[ cover ]]; then
+if [[ $cover ]]; then
   open coverage/lcov-report/lib/index.html
 fi
