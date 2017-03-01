@@ -106,6 +106,9 @@ export class Trie {
 
     // Do any existing props share a common prefix?
     for (prop in node) {
+      if (!node.hasOwnProperty(prop)) {
+        continue;
+      }
       prefix = commonPrefix(word, prop);
       if (prefix.length === 0) {
         continue;
@@ -232,10 +235,10 @@ export class Trie {
     props = node.props();
     for (i = 0; i < props.length; i++) {
       prop = props[i];
-      if (node.isTerminalString(prop)) {
+      let child = node.child(prop) as Node;
+      if (!Node.isNode(child)) {
         continue;
       }
-      let child = node.child(prop) as Node;
       this.collapseChains(child);
       // Hoist the singleton child's single property to the parent
       if (child._g !== undefined && (child._d === 1 || child._g.length === 1)) {

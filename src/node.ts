@@ -39,26 +39,29 @@ export class Node {
   setChild(prop: string, value: Node | number) {
     const self = this as any as {[prop: string]: Node | number};
     if (prop !== this._g) {
-      delete self._g;
+      // delete self._g;
     }
     if (self[prop] !== undefined) {
       this._p += 1;
+      console.log("+1 " + prop);
     }
     if (this._p === 1) {
-      this._g = prop;
+      // this._g = prop;
     }
 
     self[prop] = value;
   }
 
   deleteChild(prop: string) {
+    const self = this as any as {[prop: string]: Node | number};
     if (prop === this._g) {
-      delete this._g;
+      // delete this._g;
     }
+    console.log("-1 " + prop);
     this._p -= 1;
-    delete (this as any as {[prop: string]: Node | number})[prop];
+    delete self[prop];
     if (this._p === 1) {
-      this._g = this.props()[0];
+      // this._g = this.props()[0];
     }
   }
 
@@ -81,6 +84,9 @@ export class Node {
     let props: string[] = [];
 
     for (let prop in me) {
+      if (!me.hasOwnProperty(prop)) {
+        continue;
+      }
       if (prop !== '' && prop[0] !== '_') {
         if (!nodesOnly || Node.isNode(this.child(prop))) {
           props.push(prop);
@@ -114,7 +120,7 @@ export class Node {
 
   // This function can be used as a Type Guard (TypeScript)
   static isNode(n: number | Node): n is Node {
-    return typeof n === 'object';
+    return n instanceof Node;
   }
 }
 
