@@ -26,6 +26,9 @@ export class Node {
   // For singleton nodes, the name of it's single property.
   _g: string;
 
+  // TODO: Remove after complete refactor - no needed with Walker.
+  _v: number;
+
   // Number of child properties.
   _p = 0;
 

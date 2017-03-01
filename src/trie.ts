@@ -42,59 +42,7 @@
 import * as ptrie from './ptrie';
 import { Histogram } from './histogram';
 import { unique } from './util';
-
-class Node {
-  '_c': number;
-  '_n': number;
-  '_d': number;
-  '_v': number;
-  '_g': string;
-
-  child(prop: string): Node | number {
-    return (this as any as {[prop: string]: Node | number})[prop];
-  }
-
-  setChild(prop: string, value: Node | number) {
-    (this as any as {[prop: string]: Node | number})[prop] = value;
-  }
-
-  deleteChild(prop: string) {
-    delete (this as any as {[prop: string]: Node | number})[prop];
-  }
-
-  // A property is a terminal string
-  isTerminalString(prop: string): boolean {
-    return typeof this.child(prop) === 'number';
-  }
-
-  // This node is a terminal node (the prefix string is a word in the
-  // dictionary).
-  isTerminal(): boolean {
-    return this.isTerminalString('');
-  }
-
-  // Well ordered list of properties in a node (string or object properties)
-  // Use nodesOnly === true to return only properties of child nodes (not
-  // terminal strings).
-  props(nodesOnly?: boolean): string[] {
-    let me: {[prop: string]: Node | number} = this as any;
-    let props: string[] = [];
-
-    for (let prop in me) {
-      if (prop !== '' && prop[0] !== '_') {
-        if (!nodesOnly || isNode(this.child(prop))) {
-          props.push(prop);
-        }
-      }
-    }
-    props.sort();
-    return props;
-  }
-}
-
-function isNode(n: number | Node): n is Node {
-  return typeof n === 'object';
-}
+import { Node } from './node';
 
 // Create a Trie data structure for searching for membership of strings
 // in a dictionary in a very space efficient way.
@@ -163,7 +111,7 @@ export class Trie {
         continue;
       }
       // Prop is a proper prefix - recurse to child node
-      if (prop === prefix && isNode(node.child(prop))) {
+      if (prop === prefix && Node.isNode(node.child(prop))) {
         this._insert(word.slice(prefix.length), node.child(prop) as Node);
         return;
       }
@@ -227,7 +175,7 @@ export class Trie {
     let props = node.props();
     for (let i = 0; i < props.length; i++) {
       let prop = props[i];
-      if (isNode(node.child(prop))) {
+      if (Node.isNode(node.child(prop))) {
         node.setChild(prop, this.combineSuffixNode(node.child(prop) as Node));
         sig.push(prop);
         sig.push((node.child(prop) as Node)._c);
