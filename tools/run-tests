@@ -9,6 +9,7 @@ if [[ "$1" == "--help" ]]; then
   echo "Usage: run-tests [--build] [--cover] [--grep pattern]"
   echo "  --build: Rebuild before running tests."
   echo "  --cover: Open code coverage in browser after running tests."
+  echo "  --debug: Use Chrome Dev Tools to debug test."
   echo "  --grep <pattern>: Only run tests whose description matches pattern."
   exit 0
 fi
@@ -19,22 +20,36 @@ if [[ ! -d "node_modules" ]]; then
   exit 1
 fi
 
-if [[ "$1" == "--build" ]]; then
-  shift
+MOCHA_ARGS="--ui tdd --require source-map-support/register lib/test"
+EXTRA_MOCHA_ARGS=""
+
+for flag in "$@"; do
+  case "$flag" in
+    --build)
+      build=true;
+      ;;
+    --cover)
+      cover=true
+      ;;
+    --debug)
+      debug=true
+      ;;
+    *)
+      EXTRA_MOCHA_ARGS="$EXTRA_MOCHA_ARGS $flag"
+      ;;
+  esac
+done
+
+if [[ $build ]]; then
   build-project
 fi
 
-if [[ "$1" == "--cover" ]]; then
-  shift
-  cover=true
-fi
-
 # Use istanbul for code coverage, while using mocha as the test runner.
-istanbul cover --print detail \
-         _mocha -- \
-         --ui tdd \
-         --require "source-map-support/register" \
-         lib/test "$@"
+if [[ $debug ]]; then
+  mocha --inspect --debug-brk $MOCHA_ARGS $EXTRA_MOCHA_ARGS
+else
+  istanbul cover --print detail _mocha -- $MOCHA_ARGS $EXTRA_MOCHA_ARGS
+fi
 
 # Open lcov coverage report in the browser (this probably only works on Mac).
 if [[ $cover ]]; then
