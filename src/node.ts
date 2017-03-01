@@ -43,7 +43,6 @@ export class Node {
     }
     if (self[prop] !== undefined) {
       this._p += 1;
-      console.log("+1 " + prop);
     }
     if (this._p === 1) {
       // this._g = prop;
@@ -57,7 +56,6 @@ export class Node {
     if (prop === this._g) {
       // delete this._g;
     }
-    console.log("-1 " + prop);
     this._p -= 1;
     delete self[prop];
     if (this._p === 1) {

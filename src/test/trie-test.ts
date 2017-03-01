@@ -24,8 +24,10 @@ suite("Trie", () => {
     const tests: Test[] = [
       {data: "",
        expect: {nodeCount: 1}},
-      {data: "cat", expect: {nonWords: ['ca'], nodeCount: 1}},
-      {data: "cat cats", expect: {nonWords: ['cas'], nodeCount: 2}},
+      {data: "cat",
+       expect: {nonWords: ['ca'], nodeCount: 1}},
+      {data: "cat cats",
+       expect: {nonWords: ['cas'], nodeCount: 2}},
     ];
 
     dataDrivenTest(tests, (data: string, expect: Expect) => {
@@ -51,8 +53,6 @@ suite("Trie", () => {
 });
 
 function nodeCount(trie: Trie): number {
-  console.log("Root: " + JSON.stringify(trie.root, null, 2));
-
   trie.prepDFS();
   return _nodeCount(trie, trie.root);
 }
