@@ -11,5 +11,5 @@ tslint --format=verbose src/*.ts src/test/*.ts
 
 rm -rf lib
 
-echo -e "\nCompiling TypeScript files ..."
+echo -e "Compiling TypeScript files ..."
 tsc

@@ -44,11 +44,15 @@ if [[ $build ]]; then
   build-project
 fi
 
+echo -e "\nmocha $MOCHA_ARGS $EXTRA_MOCHA_ARGS ..."
+
 # Use istanbul for code coverage, while using mocha as the test runner.
 if [[ $debug ]]; then
   mocha --inspect --debug-brk $MOCHA_ARGS $EXTRA_MOCHA_ARGS
-else
+elif [[ $cover ]]; then
   istanbul cover --print detail _mocha -- $MOCHA_ARGS $EXTRA_MOCHA_ARGS
+else
+  mocha $MOCHA_ARGS $EXTRA_MOCHA_ARGS
 fi
 
 # Open lcov coverage report in the browser (this probably only works on Mac).
