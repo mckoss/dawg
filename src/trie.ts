@@ -12,32 +12,6 @@
   ptrie = new PackedTrie(compressed);
   bool = ptrie.isWord(word)
 
-  Node structure:
-
-  Each node of the Trie is an Object that can contain the following properties:
-
-  Special properties:
-
-  '_c': A unique name for the node (starting from 1), used in combining
-        Suffixes.
-
-  '_n': Created when packing the Trie, the sequential node number (in pre-order
-        traversal).
-
-  '_d': The number of times a node is shared (it's in-degree from other nodes).
-  '_v': Visited in DFS.
-  '_g': For singleton nodes, the name of it's single property.
-
-  Other properties - the property name is zero or more characters to be consumed
-  from the prefix of the test string, with the remainder to be checked in the
-  child node which is the value of the property.
-
-  '' (empty string): If present (with value === 1), the node is a Terminal Node
-  The prefix leading to this node is a word in the dictionary.
-
-  numeric properties (value === 1) - the property name is a terminal string so
-  that the prefix + string is a word in the dictionary.
-
 */
 import * as ptrie from './ptrie';
 import { Histogram } from './histogram';
