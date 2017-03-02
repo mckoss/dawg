@@ -86,7 +86,14 @@ export function dataDrivenTest(tests: Spec[],
 // Default formatting function to display values.
 function format(o: any): string {
   if (o instanceof RegExp) {
-    return o.toString();
+    return trimTo(o.toString(), 30);
   }
-  return JSON.stringify(o);
+  return trimTo(JSON.stringify(o), 40);
+}
+
+function trimTo(s: string, n: number): string {
+  if (s.length > n) {
+    s = s.slice(0, n - 4) + ' ...';
+  }
+  return s;
 }
