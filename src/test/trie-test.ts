@@ -8,6 +8,12 @@ import { Node } from '../node';
 import { Trie } from '../trie';
 
 suite("Trie", () => {
+  test("No initial words.", () => {
+    let trie = new Trie();
+    assert.equal(nodeCount(trie), 1);
+    assert.equal(trie.wordCount, 0);
+  });
+
   suite("Samples", () => {
     type Expect = {
       nodeCount?: number;
@@ -18,7 +24,7 @@ suite("Trie", () => {
 
     type Test = {
       label?: string;
-      data: string;
+      data?: string;
       expect: Expect
     };
 
@@ -134,7 +140,7 @@ suite("Trie", () => {
     let words: string[];
     let trie: Trie;
 
-    this.timeout(10000);
+    this.timeout(100000);
 
     suiteSetup(() => {
       return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
