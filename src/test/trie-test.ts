@@ -8,13 +8,6 @@ import { Node } from '../node';
 import { Trie } from '../trie';
 
 suite("Trie", () => {
-  test("No initial words.", () => {
-    let trie = new Trie();
-    assert.equal(nodeCount(trie), 1);
-    assert.equal(trie.wordCount, 0);
-  });
-
-  suite("Samples", () => {
     type Expect = {
       nodeCount?: number;
       nonWords?: string[]
@@ -28,7 +21,7 @@ suite("Trie", () => {
       expect: Expect
     };
 
-    const tests: Test[] = [
+    const testSamples: Test[] = [
       {data: "",
        expect: {nodeCount: 1, wordCount: 0}},
       {data: "cat",
@@ -106,7 +99,14 @@ suite("Trie", () => {
        }},
     ];
 
-    dataDrivenTest(tests, (data: string, expect: Expect) => {
+  test("No initial words.", () => {
+    let trie = new Trie();
+    assert.equal(nodeCount(trie), 1);
+    assert.equal(trie.wordCount, 0);
+  });
+
+  suite("Samples", () => {
+    dataDrivenTest(testSamples, (data: string, expect: Expect) => {
       let trie = new Trie(data);
       trie.optimize();
 
@@ -132,6 +132,19 @@ suite("Trie", () => {
           assert.ok(!trie.isWord(word), word + ' should not be in Trie');
         });
       }
+    });
+  });
+
+  suite("Pack Samples", () => {
+    dataDrivenTest(testSamples, (data: string, expect: Expect) => {
+      if (expect.pack === undefined) {
+        return;
+      }
+
+      let trie = new Trie(data);
+      trie.optimize();
+
+      assert.equal(trie.pack(), expect.pack);
     });
   });
 

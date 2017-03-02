@@ -18,6 +18,8 @@ import { Histogram } from './histogram';
 import { unique } from './util';
 import { Node } from './node';
 
+const DEBUG = false;
+
 // Create a Trie data structure for searching for membership of strings
 // in a dictionary in a very space efficient way.
 export class Trie {
@@ -401,10 +403,12 @@ export class Trie {
         savings[sym] = topNodes[sym][1] - defSize -
           histRel.countOf(ptrie.BASE - sym - 1) +
           savings[sym - 1];
-        console.log("savings[" + sym + "] " + savings[sym] + ' = ' +
-                    savings[sym - 1] + ' +' +
-                    topNodes[sym][1] + ' - ' + defSize + ' - ' +
-                    histRel.countOf(ptrie.BASE - sym - 1) + ')');
+
+        log("savings[" + sym + "] " + savings[sym] + ' = ' +
+            savings[sym - 1] + ' +' +
+            topNodes[sym][1] + ' - ' + defSize + ' - ' +
+            histRel.countOf(ptrie.BASE - sym - 1) + ')');
+
         if (savings[sym] >= best) {
           best = savings[sym];
           count = sym + 1;
@@ -451,4 +455,10 @@ function commonPrefix(w1: string, w2: string) {
   for (i = 0; i < maxlen && w1[i] === w2[i]; i++) {/*_*/}
 
   return w1.slice(0, i);
+}
+
+function log(message?: string, ...args: any[]) {
+  if (DEBUG) {
+    console.log(message, ...args);
+  }
 }
