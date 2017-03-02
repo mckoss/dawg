@@ -70,10 +70,16 @@ start_cmd() {
 }
 
 stop_cmd() {
-  echo "Stopping $cmd_name ..."
+  echo -n "Stopping $cmd_name ... "
   kill "$pid"
-  pid=""
-  rm $pidfile
+  sleep 1
+  pid="$(get_pid)"
+  if [ -z "$pid" ]; then
+    echo "stopped."
+  else
+    echo "not stopped?"
+    status_cmd
+  fi
 }
 
 status_cmd() {
@@ -82,7 +88,7 @@ status_cmd() {
   else
     status="==== $cmd_name not running. ===="
   fi
-  echo "$(printf "%-${MAX_NAME}s" $cmd_name) $status"
+  echo "$(printf "%-${MAX_NAME}s" "$cmd_name") $status"
 }
 
 log_cmd() {
