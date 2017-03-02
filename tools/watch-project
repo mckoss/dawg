@@ -1,0 +1,13 @@
+#!/bin/bash
+# watch-project --- Run Typescript compiler in watch mode in background.
+set -e
+
+cd $PROJ_DIR
+
+cmd="$1"
+
+if [[ -z "$cmd" ]]; then
+  cmd="start"
+fi
+
+daemon-command "$cmd" tsc --watch

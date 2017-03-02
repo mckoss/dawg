@@ -55,16 +55,17 @@ log_file="$VAR_DIR/logs/$cmd_name.log"
 start_cmd() {
   echo -e "Starting command: $* @ $(date).\n$DIVIDER" > "$log_file"
 
-  echo "Command: $*"
+  echo -n "Command: $* ... "
   nohup "$@" 2>&1 >> "$log_file" &
 
   echo $! > "$pid_file"
   sleep 1
   pid="$(get_pid)"
   if [ -z "$pid" ]; then
-    echo "  ... $cmd_name terminated early?"
+    echo "terminated early?"
   else
-    echo "$cmd_name started!"
+    echo "started!"
+    status_cmd
   fi
 }
 
@@ -113,7 +114,8 @@ pid="$(get_pid)"
 case $COMMAND in
   start)
     if [ -n "$pid" ]; then
-      echo "$cmd_name is already running."
+      echo "$cmd_name is already running:"
+      status_cmd
     else
       start_cmd "$@"
     fi
@@ -127,7 +129,7 @@ case $COMMAND in
     ;;
   restart)
     if [ -n "$pid" ]; then
-    stop_cmd
+      stop_cmd
     fi
     start_cmd "$@"
     ;;
