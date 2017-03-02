@@ -160,10 +160,13 @@ suite("Trie", () => {
         .then((result: string) => {
           data = result;
           words = splitWords(data);
-          trie = new Trie(data);
-
           // Remove blank word at the end
           words.splice(-1);
+
+          trie = new Trie(data);
+          let packed = trie.pack();
+          console.log("Packed length: " + packed.length);
+          console.log("Header: " + packed.slice(0, 100));
         });
     });
 
