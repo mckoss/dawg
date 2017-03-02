@@ -129,20 +129,35 @@ suite("Trie", () => {
     });
   });
 
-  suite("English dictionary", () => {
+  suite("English dictionary", function() {
     let data: string;
+    let words: string[];
+    let trie: Trie;
+
+    this.timeout(10000);
 
     suiteSetup(() => {
       return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
         .then((result: string) => {
           data = result;
+          words = splitWords(data);
+          trie = new Trie(data);
+
+          // Remove blank word at the end
+          words.splice(-1);
         });
     });
 
     test("Read dictionary", function() {
-      this.timeout(10000);
-      let trie = new Trie(data);
       assert.equal(trie.wordCount, 80612, "expected size");
+      assert.equal(words.length, 80612);
+    });
+
+    test("Sample words in Trie", () => {
+      for (let i = 0; i < words.length; i += 20) {
+        let word = words[i];
+        assert.ok(trie.isWord(word));
+      }
     });
   });
 });
