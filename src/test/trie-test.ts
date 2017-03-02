@@ -1,5 +1,8 @@
+import * as path from 'path';
+
 import { assert } from 'chai';
 import { dataDrivenTest } from './test-helper';
+import { readFile } from '../file-util';
 
 import { Node } from '../node';
 import { Trie } from '../trie';
@@ -123,6 +126,23 @@ suite("Trie", () => {
           assert.ok(!trie.isWord(word), word + ' should not be in Trie');
         });
       }
+    });
+  });
+
+  suite("English dictionary", () => {
+    let data: string;
+
+    suiteSetup(() => {
+      return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
+        .then((result: string) => {
+          data = result;
+        });
+    });
+
+    test("Read dictionary", function() {
+      this.timeout(10000);
+      let trie = new Trie(data);
+      assert.equal(trie.wordCount, 80612, "expected size");
     });
   });
 });
