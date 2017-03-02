@@ -7,13 +7,14 @@ import { Trie } from '../trie';
 suite("Trie", () => {
   suite("Samples", () => {
     type Expect = {
-      nodeCount: number;
+      nodeCount?: number;
       nonWords?: string[]
       wordCount?: number;
       pack?: string;
     };
 
     type Test = {
+      label?: string;
       data: string;
       expect: Expect
     };
@@ -87,13 +88,22 @@ suite("Trie", () => {
          nonWords: ['b', 'ing', 'ad'],
          nodeCount: 2,
          pack: "b0d0r0s0;ad,ing"}},
+      {label: "Issue #8 from lookups",
+       data: "brian bruce bryan bryant bryce bryon buddy burton byron caleb calvin carlo carlton " +
+       "carroll cedric cesar cha charle charli chester chri christian christopher chuck clarence " +
+       "clark clay clayton damian damien damon daniel danny darin dariu darwin dav davi david " +
+       "dean dejan deni denni derek derrick devin deven dewayne dewey",
+       expect: {
+       }},
     ];
 
     dataDrivenTest(tests, (data: string, expect: Expect) => {
       let trie = new Trie(data);
       trie.optimize();
 
-      assert.equal(nodeCount(trie), expect.nodeCount);
+      if (expect.nodeCount !== undefined) {
+        assert.equal(nodeCount(trie), expect.nodeCount);
+      }
 
       splitWords(data).forEach((word) => {
         if (word === '') {
@@ -104,6 +114,8 @@ suite("Trie", () => {
 
       if (expect.wordCount !== undefined) {
         assert.equal(trie.wordCount, expect.wordCount);
+      } else {
+        assert.equal(trie.wordCount, splitWords(data).length);
       }
 
       if (expect.nonWords) {
