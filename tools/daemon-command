@@ -6,11 +6,12 @@ TOOLS_DIR="$(unset CDPATH; cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 
 VAR_DIR="$TOOLS_DIR/var"
 
-ALL_COMMANDS="start stop restart status logs"
+ALL_COMMANDS="start stop restart status logs tail"
 start_help="Start a command as a daemon (background process)."
 stop_help="Stop a running command."
 restart_help="Stop and restart a daemon."
 status_help="Show information a running command."
+tail_help="Tail the log file."
 logs_help="Show tail lines from a command log file."
 
 MAX_NAME=30
@@ -97,6 +98,12 @@ log_cmd() {
   tail -n 20 "$log_file" || true
 }
 
+tail_cmd() {
+  echo "$cmd_name logfile ($log_file):"
+  echo "$DIVIDER"
+  tail -f "$log_file"
+}
+
 get_pid() {
   if [[ -f "$pid_file" ]]; then
     local pid="$(cat "$pid_file")"
@@ -144,5 +151,8 @@ case $COMMAND in
     ;;
   logs)
     log_cmd
+    ;;
+  tail)
+    tail_cmd
     ;;
 esac
