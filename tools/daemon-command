@@ -1,0 +1,140 @@
+#!/bin/bash
+# daemon-command --- Run a command as a background process.
+set -e
+
+TOOLS_DIR="$(unset CDPATH; cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+
+VAR_DIR="$TOOLS_DIR/var"
+
+ALL_COMMANDS="start stop restart status logs"
+start_help="Start a command as a daemon (background process)."
+stop_help="Stop a running command."
+restart_help="Stop and restart a daemon."
+status_help="Show information a running command."
+logs_help="Show tail lines from a command log file."
+
+MAX_NAME=30
+PID_COLUMNS="pid,%cpu,pmem,start,time,command"
+
+DIVIDER="================================"
+
+usage () {
+    local flag command service
+
+    echo "Run the $* command as a background process."
+    usage_helper
+    sep="["
+    for command in $ALL_COMMANDS; do
+        echo -n "${sep}$command"
+        sep="|"
+    done
+    echo -n "] "
+
+    echo "[command-line] "
+
+    show_help "  --" $ALL_FLAGS
+    echo
+    show_help "  " $ALL_COMMANDS
+}
+
+source $TOOLS_DIR/bash-helper
+
+mkdir -p "$VAR_DIR/pids"
+mkdir -p "$VAR_DIR/logs"
+
+if is_in_list $1 $ALL_COMMANDS; then
+  COMMAND="$1"; shift
+else
+  COMMAND=status
+fi
+
+cmd_name="$1"
+pid_file="$VAR_DIR/pids/$cmd_name.pid"
+log_file="$VAR_DIR/logs/$cmd_name.log"
+
+start_cmd() {
+  echo -e "Starting command: $* @ $(date).\n$DIVIDER" > "$log_file"
+
+  echo "Command: $*"
+  nohup "$@" 2>&1 >> "$log_file" &
+
+  echo $! > "$pid_file"
+  sleep 1
+  pid="$(get_pid)"
+  if [ -z "$pid" ]; then
+    echo "  ... $cmd_name terminated early?"
+  else
+    echo "$cmd_name started!"
+  fi
+}
+
+stop_cmd() {
+  echo "Stopping $cmd_name ..."
+  kill "$pid"
+  pid=""
+  rm $pidfile
+}
+
+status_cmd() {
+  if [ -n "$pid" ]; then
+    status="$(ps -p $pid -o $PID_COLUMNS | tail -n +2)"
+  else
+    status="==== $cmd_name not running. ===="
+  fi
+  echo "$(printf "%-${MAX_NAME}s" $cmd_name) $status"
+}
+
+log_cmd() {
+  echo "$cmd_name logfile ($log_file):"
+  echo "$DIVIDER"
+  tail -n 20 "$log_file" || true
+}
+
+get_pid() {
+  if [[ -f "$pid_file" ]]; then
+    local pid="$(cat "$pid_file")"
+    if ps -p $pid > /dev/null; then
+      echo "$pid"
+      return
+    fi
+
+    rm $pid_file
+  fi
+}
+
+# Print heading over all the ps status's echoed below.
+if [[ "$COMMAND" == "status" ]]; then
+  status="$(ps -p 999 -o $PID_COLUMNS | head -n 1)"
+  echo "$(printf "%-${MAX_NAME}s" "Root") $status"
+fi
+
+pid="$(get_pid)"
+
+case $COMMAND in
+  start)
+    if [ -n "$pid" ]; then
+      echo "$cmd_name is already running."
+    else
+      start_cmd "$@"
+    fi
+    ;;
+  stop)
+    if [ -z "$pid" ]; then
+      echo "$cmd_name is not running."
+    else
+      stop_cmd
+    fi
+    ;;
+  restart)
+    if [ -n "$pid" ]; then
+    stop_cmd
+    fi
+    start_cmd "$@"
+    ;;
+  status)
+    status_cmd
+    ;;
+  logs)
+    log_cmd
+    ;;
+esac
