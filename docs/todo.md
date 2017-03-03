@@ -1,6 +1,8 @@
 # Some misc stuff to do for DAWG.
 
-- Include .d.ts files.
+- Finish migration of PTrie!
+- Include .d.ts files in lib directory.
+
 - Performance measurements (use to determine effect of refactorings).
 - Refactor Node to use sub-objects for childNodes and terminals.  This will
   also normalize some of the awkward type casts used in Node.
