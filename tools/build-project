@@ -13,3 +13,6 @@ rm -rf lib
 
 echo -e "Compiling TypeScript files ..."
 tsc
+
+# Make command line binary executable.
+chmod +x lib/dawg.js

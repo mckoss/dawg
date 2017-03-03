@@ -1,9 +1,14 @@
 {
   "name": "dawg-lookup",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Directed Acyclic Word Graph",
   "main": "lib/index.js",
   "bin": "lib/dawg.js",
+  "files": [
+    "lib",
+    "src",
+    "tools"
+  ],
   "scripts": {
     "test": "tools/run-tests"
   },
