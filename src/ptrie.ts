@@ -1,4 +1,4 @@
-import { fromAlphaCode } from './alphacode';
+import { fromAlphaCode, toAlphaCode } from './alphacode';
 
 export const NODE_SEP = ';';
 export const STRING_SEP = ',';
@@ -49,12 +49,15 @@ export class PTrie {
     this.symCount = 0;
 
     while (true) {
-      let m = reSymbol.exec(this.nodes[0]);
+      let m = reSymbol.exec(this.nodes[this.symCount]);
       if (!m) {
         break;
       }
-      // TODO: Aren't theses indices always sequential?
-      this.syms[fromAlphaCode(m[1])] = fromAlphaCode(m[2]);
+      if (fromAlphaCode(m[1]) !== this.symCount) {
+        throw new Error("Invalid Symbol name - found " + m[1] +
+                        " when expecting " + toAlphaCode(this.symCount));
+      }
+      this.syms[this.symCount] = fromAlphaCode(m[2]);
       this.symCount++;
     }
     this.nodes.splice(0, this.symCount);
@@ -155,6 +158,8 @@ export class PTrie {
     if (dnode < this.symCount) {
       return this.syms[dnode];
     }
-    return inodeFrom + dnode + this.symCount + 1;
+    dnode -= this.symCount;
+
+    return inodeFrom + dnode + 1;
   }
 }

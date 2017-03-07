@@ -31,4 +31,19 @@ suite("PTrie", () => {
       }
     });
   });
+
+  suite("Symbols", () => {
+    let tests = [
+      ["0:4;a1q0;!b1;!c1;!d1;!e1;!f",
+       ['a', 'ab', 'abc', 'abcd', 'abcde', 'abcdef',
+        'q', 'qe', 'qef']]
+    ];
+
+    dataDrivenTest(tests, (data: string, expect: string[]) => {
+      let ptrie = new PTrie(data);
+      expect.forEach((word) => {
+        assert.ok(ptrie.isWord(word), word + " is a word");
+      });
+    });
+  });
 });
