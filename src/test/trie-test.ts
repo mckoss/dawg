@@ -1,104 +1,13 @@
-import * as path from 'path';
-
 import { assert } from 'chai';
 import { dataDrivenTest } from './test-helper';
-import { readFile } from '../file-util';
+import {
+  testSamples, Expect, splitWords, readDictionary
+} from './trie-samples';
 
 import { Node } from '../node';
 import { Trie } from '../trie';
 
 suite("Trie", () => {
-    type Expect = {
-      nodeCount?: number;
-      nonWords?: string[]
-      wordCount?: number;
-      pack?: string;
-    };
-
-    type Test = {
-      label?: string;
-      data?: string;
-      expect: Expect
-    };
-
-    const testSamples: Test[] = [
-      {data: "",
-       expect: {nodeCount: 1, wordCount: 0}},
-      {data: "cat",
-       expect: {nonWords: ['ca'], nodeCount: 1, wordCount: 1}},
-      {data: "cat cats",
-       expect: {nonWords: ['cas'], nodeCount: 2, wordCount: 2}},
-
-      {data: "cat bat",
-       expect: {
-         pack: "b0c0;at",
-         nodeCount: 2}},
-      {data: "a ab abc",
-       expect: {
-         nodeCount: 3,
-         pack: "a0;!b0;!c"}},
-      {data: "this is a test",
-       expect: {
-         wordCount: 4,
-         pack: "a,is,t0;est,his",
-         nonWords: ['t', 'te', 'tes'],
-         nodeCount: 2}},
-
-      {data: "them the",
-       expect: {
-         wordCount: 2,
-         nonWords: ['th', 'there'],
-         nodeCount: 2}},
-      {data: "the them th",
-       expect: {
-         wordCount: 3,
-         nonWords: ['t', 'they'],
-         nodeCount: 3}},
-      {data: "the them the they themselves",
-       expect: {
-         wordCount: 4,
-         nonWords: ['thems'],
-         nodeCount: 3}},
-      {data: "abcde abcfg cat",
-       expect: {
-         wordCount: 3,
-         nonWords: ['abc', 'cats'],
-         nodeCount: 2}},
-      {data: "to to",
-       expect: {
-         wordCount: 1,
-         nonWords: ['t'],
-         nodeCount: 1}},
-      {data: "bat bats cat cats dog dogs fish fishing dogging",
-       expect: {
-         wordCount: 9,
-         nonWords: ['ing', 's', 'cating', 'doging'],
-         pack: "b3c3dog1fish0;!i1;!gi0s;ng;at0;!s",
-         nodeCount: 6}},
-      {data: "tap taps top tops cap caps cop cops",
-       expect: {
-         nonWords: ['c', 'ap'],
-         nodeCount: 3,
-         pack: "c0t0;ap0op0;!s"}},
-      {data: "bing sing ding ring",
-       expect: {
-         nonWords: ['b', 'ing'],
-         nodeCount: 2,
-         pack: "b0d0r0s0;ing"}},
-      {data: "bing sing ding ring bad sad dad rad",
-       expect: {
-         nonWords: ['b', 'ing', 'ad'],
-         nodeCount: 2,
-         pack: "b0d0r0s0;ad,ing"}},
-      {label: "Issue #8 from lookups",
-       data: "brian bruce bryan bryant bryce bryon buddy burton byron caleb calvin carlo carlton " +
-       "carroll cedric cesar cha charle charli chester chri christian christopher chuck clarence " +
-       "clark clay clayton damian damien damon daniel danny darin dariu darwin dav davi david " +
-       "dean dejan deni denni derek derrick devin deven dewayne dewey",
-       expect: {
-       }},
-    ];
-
   test("No initial words.", () => {
     let trie = new Trie();
     assert.equal(nodeCount(trie), 1);
@@ -136,11 +45,10 @@ suite("Trie", () => {
   });
 
   suite("Pack Samples", () => {
-    dataDrivenTest(testSamples, (data: string, expect: Expect) => {
-      if (expect.pack === undefined) {
-        return;
-      }
-
+    let packTests = testSamples.filter((tests) => {
+      return tests.expect && tests.expect.pack;
+    });
+    dataDrivenTest(packTests, (data: string, expect: Expect) => {
       let trie = new Trie(data);
       trie.optimize();
 
@@ -149,24 +57,17 @@ suite("Trie", () => {
   });
 
   suite("English dictionary", function() {
-    let data: string;
     let words: string[];
     let trie: Trie;
 
     this.timeout(100000);
 
     suiteSetup(() => {
-      return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
-        .then((result: string) => {
-          data = result;
-          words = splitWords(data);
-          // Remove blank word at the end
-          words.splice(-1);
-
-          trie = new Trie(data);
+      return readDictionary()
+        .then((result: string[]) => {
+          words = result;
+          trie = new Trie(words);
           let packed = trie.pack();
-          console.log("Packed length: " + packed.length);
-          console.log("Header: " + packed.slice(0, 100));
         });
     });
 
@@ -180,6 +81,7 @@ suite("Trie", () => {
         let word = words[i];
         assert.ok(trie.isWord(word));
       }
+      assert.ok(!trie.isWord('xyzzy'));
     });
   });
 });
@@ -200,9 +102,4 @@ function _nodeCount(trie: Trie, node: Node): number {
     }
   }
   return count + 1;
-}
-
-function splitWords(dict: string): string[] {
-  let a = dict.split(/\s/);
-  return a;
 }
