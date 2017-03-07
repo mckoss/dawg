@@ -1,13 +1,12 @@
 import * as path from 'path';
+import { readFile } from '../file-util';
 
 import { assert } from 'chai';
 import { dataDrivenTest } from './test-helper';
-import { readFile } from '../file-util';
+import { testSamples, Expect, splitWords } from './trie-samples';
 
 import { Node } from '../node';
 import { Trie } from '../trie';
-
-import { testSamples, Expect } from './trie-samples';
 
 suite("Trie", () => {
   test("No initial words.", () => {
@@ -47,11 +46,10 @@ suite("Trie", () => {
   });
 
   suite("Pack Samples", () => {
-    dataDrivenTest(testSamples, (data: string, expect: Expect) => {
-      if (expect.pack === undefined) {
-        return;
-      }
-
+    let packTests = testSamples.filter((tests) => {
+      return tests.expect && tests.expect.pack;
+    });
+    dataDrivenTest(packTests, (data: string, expect: Expect) => {
       let trie = new Trie(data);
       trie.optimize();
 
@@ -111,9 +109,4 @@ function _nodeCount(trie: Trie, node: Node): number {
     }
   }
   return count + 1;
-}
-
-function splitWords(dict: string): string[] {
-  let a = dict.split(/\s/);
-  return a;
 }

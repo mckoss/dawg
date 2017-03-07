@@ -91,3 +91,8 @@ export const testSamples: Test[] = [
    expect: {
    }},
 ];
+
+export function splitWords(dict: string): string[] {
+  let a = dict.split(/\s/);
+  return a;
+}
