@@ -19,7 +19,7 @@ suite("Alpha Codes", () => {
     });
   });
 
-  suite("Random integers", () => {
+  test("Random integers", () => {
     for (let i = 0; i < 1000; i++) {
       let n = randomInt(100000);
       let c = toAlphaCode(n);
