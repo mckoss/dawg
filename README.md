@@ -1,5 +1,7 @@
 # A Directed Acyclic Word Graph implementation in TypeScript/JavaScript
 
+[ ![Codeship Status for mckoss/dawg](https://app.codeship.com/projects/1f493ab0-e53d-0134-5322-3a71122f3fca/status?branch=master)](https://app.codeship.com/projects/206435)
+
 This library takes a dictionary of (ascii) words as input, and generates a
 compressed datastructure based on a [DAWG] (like a [Trie], but whose
 representation shares common suffixes as well as common prefixes).
