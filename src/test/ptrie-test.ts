@@ -1,6 +1,8 @@
 import { assert } from 'chai';
 import { dataDrivenTest } from './test-helper';
-import { testSamples, Expect, splitWords } from './trie-samples';
+import {
+  testSamples, Expect, splitWords, readDictionary
+} from './trie-samples';
 
 import { Trie } from '../trie';
 import { PTrie } from '../ptrie';
@@ -69,5 +71,22 @@ suite("PTrie", () => {
     assert.deepEqual(ptrie.completions('cat'), ['cat', 'cats']);
     assert.deepEqual(ptrie.completions('hi'),
                      ['hi', 'hit', 'hither']);
+  });
+
+  test("English dictionary", function() {
+    this.timeout(100000);
+
+    return readDictionary()
+      .then((words) => {
+        let trie = new Trie(words);
+        let ptrie = new PTrie(trie.pack());
+
+        // Test 5% of words
+        for (let i = 0; i < words.length; i += 20) {
+          assert.ok(ptrie.isWord(words[i]));
+        }
+
+        assert.ok(!ptrie.isWord('xyzzy'));
+      });
   });
 });

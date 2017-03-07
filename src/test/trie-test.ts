@@ -68,8 +68,6 @@ suite("Trie", () => {
           words = result;
           trie = new Trie(words);
           let packed = trie.pack();
-          console.log("Packed length: " + packed.length);
-          console.log("Header: " + packed.slice(0, 100));
         });
     });
 
@@ -83,6 +81,7 @@ suite("Trie", () => {
         let word = words[i];
         assert.ok(trie.isWord(word));
       }
+      assert.ok(!trie.isWord('xyzzy'));
     });
   });
 });
