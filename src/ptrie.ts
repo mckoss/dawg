@@ -29,14 +29,16 @@ interface Context {
  *
  * Usage:
  *
- *   ptrie = new PTrie(packedString);
+ *   // Unpack a packed dictionary string for use.
+ *   var ptrie = new PTrie(packedString);
  *
- *   // All the words that have pattern as a prefix.
- *   let matches = ptrie.matches(prefix);
+ *   // Test a word for membership in the dictionary.
+ *   if (ptrie.isWord(myWord)) {
+ *     ...
+ *   }
  *
- *   // Return (at most limit) word beginning alphabetically with from
- *   // and less than beyond.
- *   let words = ptrie.words(from, beyond, limit);
+ *   // For command completion - find first 20 words that begin with a prefix.
+ *   var words = ptrie.completions(prefix, 20);
  */
 export class PTrie {
   readonly nodes: string[];

@@ -1,10 +1,8 @@
 # A Directed Acyclic Word Graph implementation in TypeScript/JavaScript
 
-This library takes a dictionary of (ascii) words as input, and generates a compressed
-datastructure based on a [DAWG] (like a [Trie], but whose representation shares
-common suffixes as well as common prefixes).
-
-_Ported from my [2011 experiment: lookups](https://github.com/mckoss/lookups)_
+This library takes a dictionary of (ascii) words as input, and generates a
+compressed datastructure based on a [DAWG] (like a [Trie], but whose
+representation shares common suffixes as well as common prefixes).
 
 Inspired by several blog posts by John Resig:
 
@@ -15,16 +13,79 @@ Inspired by several blog posts by John Resig:
 - [Revised JavaScript Dictionary
   Search](http://ejohn.org/blog/revised-javascript-dictionary-search/)
 
-You can try out hosted version of this software at:
+_Ported from my [2011 experiment: lookups](https://github.com/mckoss/lookups)_
+
+You can try out (a previously) hosted version of this software at:
 
 - [JavaScript Lookups](http://lookups.pageforest.com/)
 - [Unit Tests](http://lookups.pageforest.com/test/test-runner.html)
 
+# Usage
+
+There are two classes exposed by this library:
+
+- Trie: This class takes a dictionary of words and can output a packed
+  prepresentation of it.
+- PTrie: This class can read in a packed representation, and determine
+  if a word is a member.
+
+To get started:
+
+```
+$ npm install --save dawg-lookup
+```
+
+## Creating a Packed Representation of a Dictionary
+
+```
+var Trie = require('dawg-lookup').Trie
+
+var trie = new Trie("the rain in spain falls mainly in the plain " +
+                    "main rains fall plainly " +
+                    "peter piper picked a peck of pickled peppers " +
+                    "pipers pickle pepper");
+var packed = trie.pack();
+
+// This packed representation would usually be stored or embedded
+// in your program, for use later.
+console.log(packed.split(';').join('\n'));
+/*
+a,fall8in,m6of,p0rain8spain,the
+e3i0l5
+ck0p3
+ed,le0
+!d
+ck,pp0ter
+er2
+ain0
+!ly
+!s
+*/
+```
+
+## Using a Packed Dictionary to test for Membership
+
+```
+// This dependency will not load the Trie class, which is only needed
+// for packing a dictionary, not interpreting it.
+var PTrie = require('dawg-lookup/lib/ptrie').PTrie;
+
+// Using 'packed' string from above.
+var ptrie = new PTrie(packed);
+
+console.log(ptrie.isWord('picked')); // true
+console.log(ptrie.isWord('foobar')); // false
+console.log(ptrie.isWord('ain'));    // false
+
+console.log(ptrie.completions("pi"));
+// [ 'picked', 'pickle', 'pickled', 'piper', 'pipers' ]
+```
+
 # Packed Trie Encoding Format
 
-A Packed Trie is an encoding a textual Trie using 7-bit ascii. None of
-the character need be quoted themselves when placed inside a
-JavaScript string, so dictionaries can be easily including in
+A Packed Trie is an encoding of a textual Trie using 7-bit ascii. None of
+the characters need be quoted themselves when placed inside a
+JavaScript string, so dictionaries can be easily included in
 JavaScript source files or read via ajax.
 
 ## Example
