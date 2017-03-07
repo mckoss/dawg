@@ -1,7 +1,8 @@
 # Some misc stuff to do for DAWG.
 
-- Finish migration of PTrie!
+X Finish migration of PTrie!
 - Include .d.ts files in lib directory.
+X Add CI (CodeShip)
 
 - Performance measurements (use to determine effect of refactorings).
 - Refactor Node to use sub-objects for childNodes and terminals.  This will
