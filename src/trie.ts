@@ -31,7 +31,7 @@ export class Trie {
   wordCount = 0;
   vCur = 0;
 
-  constructor(words?: string) {
+  constructor(words?: string | string[]) {
     this.insertWords(words);
   }
 

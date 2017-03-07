@@ -1,9 +1,8 @@
-import * as path from 'path';
-import { readFile } from '../file-util';
-
 import { assert } from 'chai';
 import { dataDrivenTest } from './test-helper';
-import { testSamples, Expect, splitWords } from './trie-samples';
+import {
+  testSamples, Expect, splitWords, readDictionary
+} from './trie-samples';
 
 import { Node } from '../node';
 import { Trie } from '../trie';
@@ -58,21 +57,16 @@ suite("Trie", () => {
   });
 
   suite("English dictionary", function() {
-    let data: string;
     let words: string[];
     let trie: Trie;
 
     this.timeout(100000);
 
     suiteSetup(() => {
-      return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
-        .then((result: string) => {
-          data = result;
-          words = splitWords(data);
-          // Remove blank word at the end
-          words.splice(-1);
-
-          trie = new Trie(data);
+      return readDictionary()
+        .then((result: string[]) => {
+          words = result;
+          trie = new Trie(words);
           let packed = trie.pack();
           console.log("Packed length: " + packed.length);
           console.log("Header: " + packed.slice(0, 100));

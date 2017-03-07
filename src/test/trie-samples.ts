@@ -1,3 +1,6 @@
+import * as path from 'path';
+import { readFile } from '../file-util';
+
 export type Expect = {
   nodeCount?: number;
   nonWords?: string[]
@@ -95,4 +98,14 @@ export const testSamples: Test[] = [
 export function splitWords(dict: string): string[] {
   let a = dict.split(/\s/);
   return a;
+}
+
+export function readDictionary(): Promise<string[]> {
+  return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
+    .then((result: string) => {
+      let words = splitWords(result);
+      // Remove blank word at the end
+      words.splice(-1);
+      return words;
+    });
 }
