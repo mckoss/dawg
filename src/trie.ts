@@ -14,6 +14,7 @@
 
 */
 import * as ptrie from './ptrie';
+import { BASE, toAlphaCode } from './alphacode';
 import { Histogram } from './histogram';
 import { unique } from './util';
 import { Node } from './node';
@@ -333,7 +334,7 @@ export class Trie {
           sep = '';
           continue;
         }
-        let ref = ptrie.toAlphaCode(node._n - child._n - 1 + symCount);
+        let ref = toAlphaCode(node._n - child._n - 1 + symCount);
         // Large reference to smaller string suffix -> duplicate suffix
         if (child._g && ref.length >= child._g.length &&
             node.isTerminalString(child._g)) {
@@ -375,24 +376,24 @@ export class Trie {
         let child = node.child(prop) as Node;
         let ref = node._n - child._n - 1;
         // Count the number of single-character relative refs
-        if (ref < ptrie.BASE) {
+        if (ref < BASE) {
           histRel.add(ref);
         }
         // Count the number of characters saved by converting an absolute
         // reference to a one-character symbol.
-        histAbs.add(child._n, ptrie.toAlphaCode(ref).length - 1);
+        histAbs.add(child._n, toAlphaCode(ref).length - 1);
         analyzeRefs(child);
       }
     }
 
     function symbolCount(): [number, [string, number][]] {
-      let topNodes = histAbs.highest(ptrie.BASE);
+      let topNodes = histAbs.highest(BASE);
       let savings = [];
       savings[-1] = 0;
       let best = 0;
       let count = 0;
-      let defSize = 3 + ptrie.toAlphaCode(nodeCount).length;
-      for (let sym = 0; sym < ptrie.BASE; sym++) {
+      let defSize = 3 + toAlphaCode(nodeCount).length;
+      for (let sym = 0; sym < BASE; sym++) {
         if (topNodes[sym] === undefined) {
           break;
         }
@@ -401,13 +402,13 @@ export class Trie {
         //   minus definition size
         //   minus relative size wrapping to 2 digits
         savings[sym] = topNodes[sym][1] - defSize -
-          histRel.countOf(ptrie.BASE - sym - 1) +
+          histRel.countOf(BASE - sym - 1) +
           savings[sym - 1];
 
         log("savings[" + sym + "] " + savings[sym] + ' = ' +
             savings[sym - 1] + ' +' +
             topNodes[sym][1] + ' - ' + defSize + ' - ' +
-            histRel.countOf(ptrie.BASE - sym - 1) + ')');
+            histRel.countOf(BASE - sym - 1) + ')');
 
         if (savings[sym] >= best) {
           best = savings[sym];
@@ -427,7 +428,7 @@ export class Trie {
     let symDefs = [];
 
     for (let sym = 0; sym < symCount; sym++) {
-      syms[topNodes[sym][0]] = ptrie.toAlphaCode(sym);
+      syms[topNodes[sym][0]] = toAlphaCode(sym);
     }
 
     let nodeLines: string[] = [];
@@ -438,9 +439,9 @@ export class Trie {
 
     // Prepend symbols
     for (let sym = symCount - 1; sym >= 0; sym--) {
-      nodeLines.unshift(ptrie.toAlphaCode(sym) + ':' +
-                        ptrie.toAlphaCode(nodeCount -
-                                          parseInt(topNodes[sym][0], 10) - 1));
+      nodeLines.unshift(toAlphaCode(sym) + ':' +
+                        toAlphaCode(nodeCount -
+                                    parseInt(topNodes[sym][0], 10) - 1));
     }
 
     return nodeLines.join(ptrie.NODE_SEP);
