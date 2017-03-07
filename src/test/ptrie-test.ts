@@ -46,4 +46,28 @@ suite("PTrie", () => {
       });
     });
   });
+
+  test("match", function() {
+    let trie = new Trie("cat cats dog dogs rat rats hi hit hither");
+    let ptrie = new PTrie(trie.pack());
+
+    assert.equal(ptrie.match("catjzkd"), 'cat');
+    assert.equal(ptrie.match("jzkdy"), '');
+    assert.equal(ptrie.match("jcatzkd"), '');
+    assert.equal(ptrie.match("hitherandyon"), 'hither');
+  });
+
+  test("completions", function () {
+    let trie = new Trie("cat cats dog dogs rat rats hi hit hither");
+    let ptrie = new PTrie(trie.pack());
+
+    assert.deepEqual(ptrie.completions(''),
+                     ['cat', 'cats', 'dog', 'dogs', 'hi',
+                      'hit', 'hither', 'rat', 'rats']);
+    assert.deepEqual(ptrie.completions('', 2), ['cat', 'cats']);
+    assert.deepEqual(ptrie.completions('c'), ['cat', 'cats']);
+    assert.deepEqual(ptrie.completions('cat'), ['cat', 'cats']);
+    assert.deepEqual(ptrie.completions('hi'),
+                     ['hi', 'hit', 'hither']);
+  });
 });

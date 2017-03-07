@@ -80,10 +80,15 @@ export class PTrie {
     return matches[matches.length - 1];
   }
 
-  // Return all of entries that match a prefix of word (in order of increasing
+  // Return all entries that match a prefix of word (in order of increasing
   // length.
   matches(word: string): string[] {
     return this.words(word, word + MIN_LETTER);
+  }
+
+  // Return all entries that begin with a prefix.
+  completions(prefix: string, limit?: number): string[] {
+    return this.words(prefix, beyond(prefix), limit);
   }
 
   private words(from: string, beyond: string, limit?: number): string[] {
@@ -162,4 +167,15 @@ export class PTrie {
 
     return inodeFrom + dnode + 1;
   }
+
+}
+
+// Return a string that is the smallest string greater than
+// any string which is prefixed with s.
+function beyond(s: string): string {
+  if (s.length === 0) {
+    return MAX_WORD;
+  }
+  let code = s.charCodeAt(s.length - 1);
+  return s.slice(0, -1) + String.fromCharCode(code + 1);
 }
