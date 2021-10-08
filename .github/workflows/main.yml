@@ -29,5 +29,6 @@ jobs:
       - name: Build and test
         run: |
           source tools/use
+          echo $PATH
           configure-project
           run-tests
