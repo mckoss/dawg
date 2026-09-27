@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DAWG Packer</title>
+  <meta name="description" content="Compress a word list into a packed Directed Acyclic Word Graph with dawg-lookup.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>DAWG Packer</h1>
+    <p>
+      Paste a word list on the left. <a href="https://github.com/mckoss/dawg">dawg-lookup</a>
+      compresses it into a packed Directed Acyclic Word Graph, shown on the right one node per line.
+    </p>
+  </header>
+
+  <main>
+    <section class="pane" aria-labelledby="dict-label">
+      <div class="pane-head">
+        <label id="dict-label" for="dict">Dictionary</label>
+        <div class="actions">
+          <button type="button" id="example">Example</button>
+          <button type="button" id="sample">Load OSPD3 (80k words)</button>
+          <button type="button" id="clear">Clear</button>
+        </div>
+      </div>
+      <textarea id="dict" spellcheck="false" placeholder="Enter words separated by spaces or new lines…"></textarea>
+    </section>
+
+    <section class="pane" aria-labelledby="packed-label">
+      <div class="pane-head">
+        <span id="packed-label" class="label">Packed DAWG</span>
+        <div class="actions">
+          <button type="button" id="copy">Copy packed string</button>
+        </div>
+      </div>
+      <div class="packed" id="packed-view">
+        <pre class="gutter" id="gutter" aria-hidden="true"></pre>
+        <pre class="code" id="packed"></pre>
+      </div>
+    </section>
+  </main>
+
+  <section class="stats" id="stats" aria-live="polite"></section>
+
+  <section class="lookup">
+    <label for="word">Try a lookup</label>
+    <input id="word" type="text" autocomplete="off" spellcheck="false" placeholder="Type a word or prefix">
+    <p id="lookup-result" aria-live="polite"></p>
+  </section>
+
+  <footer>
+    Line numbers are node indices; node references are relative (base 36.1).
+    Symbol definitions (<code>0:XYZ</code>) come first and are marked with <code>§</code>.
+    See the <a href="https://github.com/mckoss/dawg#packed-trie-encoding-format">encoding format</a>.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

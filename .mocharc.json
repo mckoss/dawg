@@ -1,0 +1,6 @@
+{
+  "ui": "tdd",
+  "spec": "lib/test/**/*-test.js",
+  "node-option": ["enable-source-maps"],
+  "timeout": 100000
+}

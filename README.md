@@ -1,6 +1,6 @@
 # A Directed Acyclic Word Graph implementation in TypeScript/JavaScript
 
-[ ![Codeship Status for mckoss/dawg](https://app.codeship.com/projects/1f493ab0-e53d-0134-5322-3a71122f3fca/status?branch=master)](https://app.codeship.com/projects/206435)
+[![CI](https://github.com/mckoss/dawg/actions/workflows/main.yml/badge.svg)](https://github.com/mckoss/dawg/actions/workflows/main.yml)
 
 This library takes a dictionary of (ascii) words as input, and generates a
 compressed datastructure based on a [DAWG] (like a [Trie], but whose
@@ -17,10 +17,8 @@ Inspired by several blog posts by John Resig:
 
 _Ported from my [2011 experiment: lookups](https://github.com/mckoss/lookups)_
 
-You can try out (a previously) hosted version of this software at:
-
-- [JavaScript Lookups](http://lookups.pageforest.com/)
-- [Unit Tests](http://lookups.pageforest.com/test/test-runner.html)
+Try it out in the browser: **[DAWG Packer demo](https://mckoss.github.io/dawg/)**.
+Paste in a word list and see the packed DAWG, one node per line.
 
 # Usage
 
@@ -81,6 +79,28 @@ console.log(ptrie.isWord('ain'));    // false
 
 console.log(ptrie.completions("pi"));
 // [ 'picked', 'pickle', 'pickled', 'piper', 'pipers' ]
+```
+
+Lookups are case-insensitive (the Trie lowercases its input words).
+TypeScript type declarations are included.
+
+## Adding Words Incrementally
+
+`Trie` shares common suffixes as words are inserted, so words must be added
+in sorted order. `insertWords()` sorts each batch it is given, and later
+batches must sort after every word already inserted. Inserting out of order,
+or after calling `optimize()` or `pack()`, throws an `Error`.
+
+```
+var trie = new Trie("apple banana");
+trie.insertWords("cherry date");  // OK - sorts after "banana".
+trie.insertWords("avocado");      // Throws - sorts before "banana".
+```
+
+## Command Line
+
+```
+$ npx dawg-lookup dictionary.txt > dictionary.dawg
 ```
 
 # Packed Trie Encoding Format
@@ -190,11 +210,19 @@ so we eke out a bit more space by not ignoring leading zeros.
 
 ## Building this Repo
 
+Use the Node version in `.nvmrc` (the current LTS):
+
 ```
-$ source tools/use
-$ configure-project
-$ run-tests
+$ nvm use
+$ npm install
+$ npm test              # Build and run unit tests.
+$ npm run lint
+$ npm run coverage      # Tests with a code coverage report.
+$ npm run serve:site    # Build the demo site and serve it on localhost:8080.
 ```
+
+CI (GitHub Actions) runs lint and tests on every push and pull request, and
+deploys the demo site in `site/` to GitHub Pages on pushes to `master`.
 
   [Trie]: http://en.wikipedia.org/wiki/Trie
   [DAWG]: http://en.wikipedia.org/wiki/Directed_acyclic_word_graph

@@ -1,15 +1,32 @@
 {
   "name": "dawg-lookup",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "description": "Directed Acyclic Word Graph",
   "main": "lib/index.js",
-  "bin": "lib/dawg.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "dawg-lookup": "lib/dawg.js"
+  },
   "files": [
     "lib",
-    "src"
+    "src",
+    "!lib/test",
+    "!src/test"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "test": "tools/run-tests"
+    "clean": "rm -rf lib coverage _site",
+    "build": "rm -rf lib && tsc && chmod +x lib/dawg.js",
+    "build:site": "tsc -p site && rm -rf _site && esbuild site/app.ts --bundle --minify --target=es2019 --outfile=_site/app.js && cp site/index.html site/style.css src/test/data/ospd3.txt _site/",
+    "serve:site": "npm run build:site && npx --yes http-server _site -p 8080 -c-1",
+    "lint": "eslint .",
+    "pretest": "npm run build",
+    "test": "mocha",
+    "coverage": "npm run build && c8 mocha",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run lint && npm test"
   },
   "repository": {
     "type": "git",
@@ -27,14 +44,16 @@
   },
   "homepage": "https://github.com/mckoss/dawg#readme",
   "devDependencies": {
-    "@types/chai": "^3.4.35",
-    "@types/mocha": "^2.2.39",
-    "@types/node": "^7.0.5",
-    "chai": "^3.5.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.2.0",
-    "source-map-support": "^0.4.11",
-    "tslint": "^4.5.0",
-    "typescript": "^2.2.1"
+    "@eslint/js": "^10.0.1",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.19.0",
+    "c8": "^12.0.0",
+    "chai": "^6.2.2",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.11.0",
+    "mocha": "^12.0.2",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1"
   }
 }

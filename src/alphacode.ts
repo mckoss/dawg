@@ -1,9 +1,5 @@
 export const BASE = 36;
 
-// Placeholder
-export class PTrie {
-}
-
 // 0, 1, 2, ..., A, B, C, ..., 00, 01, ... AA, AB, AC, ..., AAA, AAB, ...
 export function toAlphaCode(n: number): string {
   let s = '';
@@ -32,7 +28,7 @@ export function fromAlphaCode(s: string): number {
        i >= 0;
        i--, pow *= BASE) {
     let d = s.charCodeAt(i) - 48;
-    if (d > 10) {
+    if (d > 9) {
       d -= 7;
     }
     n += d * pow;

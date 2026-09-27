@@ -1,18 +1,17 @@
 {
-  "module": "commonjs",
-  "target": "es5",
   "compilerOptions": {
-    "outDir": "lib",
-    "lib": ["es2015", "dom"],
+    "target": "es2019",
+    "module": "commonjs",
+    "lib": ["es2019"],
+    "types": ["node", "mocha"],
     "rootDir": "src",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
+    "outDir": "lib",
+    "strict": true,
+    "declaration": true,
     "sourceMap": true,
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "exclude": [
-    "lib",
-    "node_modules",
-    "configs"
-  ]
+  "include": ["src"]
 }

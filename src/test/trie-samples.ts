@@ -100,8 +100,15 @@ export function splitWords(dict: string): string[] {
   return a;
 }
 
+// Tests run from lib/test - the data files are only in the source tree.
+export const DICTIONARY_PATH =
+  path.resolve(__dirname, '../../src/test/data/ospd3.txt');
+
+export const DICTIONARY_DAWG_PATH =
+  path.resolve(__dirname, '../../src/test/data/ospd3.dawg');
+
 export function readDictionary(): Promise<string[]> {
-  return readFile(path.resolve(process.env['PROJ_DIR'], 'src/test/data/ospd3.txt'))
+  return readFile(DICTIONARY_PATH)
     .then((result: string) => {
       let words = splitWords(result);
       // Remove blank word at the end

@@ -33,9 +33,11 @@ function cmpDefault(a: any, b: any, dir: Dir = 'asc') {
 // Sort elements and remove duplicates from array (modified in place).
 export function unique<T>(a: T[], cmp = cmpDefault) {
   a.sort(cmp);
+  let last = 0;
   for (let i = 1; i < a.length; i++) {
-    if (cmp(a[i - 1], a[i])  === 0) {
-      a.splice(i, 1);
+    if (cmp(a[last], a[i]) !== 0) {
+      a[++last] = a[i];
     }
   }
+  a.length = Math.min(a.length, last + 1);
 }
