@@ -124,7 +124,11 @@ The corresponding Packed Trie string is:
 
 Visually, this looks like:
 
-![DAWG diagram](https://g.gravizo.com/g?
+![DAWG diagram](https://g.gravizo.com/svg?digraph%20DAWG%20{%20%20aize%20=%20%224,%204%22;%20%200%20[label=%22start%22]%20%201%20[label=%22%22]%20%202%20[label=%22bat,%20cat,%20rat,%20dog%22]%20%203%20[label=%22bats,%20cats,%20rats,%20dogs%22]%20%200%20-%3E%201%20[label=%22b%22]%20%200%20-%3E%201%20[label=%22c%22]%20%200%20-%3E%202%20[label=%22dog%22]%20%200%20-%3E%201%20[label=%22r%22]%20%201%20-%3E%202%20[label=%22at%22]%20%202%20-%3E%203%20[label=%22s%22]})
+
+<!-- 
+Source code for the above, which can be edited at g.gravizo.com:
+
 digraph DAWG {
   aize = "4, 4";
   0 [label="start"]
@@ -138,7 +142,8 @@ digraph DAWG {
   1 -> 2 [label="at"]
   2 -> 3 [label="s"]
 }
-)
+
+-->
 
 This [Trie] (actually, a [DAWG]) has 3 nodes. If we follow the path of
 "cats" through the Trie we get the squence:
