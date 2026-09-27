@@ -103,6 +103,40 @@ trie.insertWords("avocado");      // Throws - sorts before "banana".
 $ npx dawg-lookup dictionary.txt > dictionary.dawg
 ```
 
+# Effective Compression
+
+How does a packed DAWG compare with general-purpose compressors? These are
+results for the 80,612-word OSPD3 Scrabble dictionary
+(`src/test/data/ospd3.txt`, one word per line), as a percentage of the
+original 625,324-byte word list:
+
+| Encoding                       |          Raw |          zip -9 |         gzip -9 |      brotli -11 |          xz -9e |
+|--------------------------------|-------------:|----------------:|----------------:|----------------:|----------------:|
+| Word list (sorted by length)   | 625,324 100% | 239,116 (38.2%) | 241,098 (38.6%) | 193,451 (30.9%) | 148,772 (23.8%) |
+| Word list (alphabetical)       | 625,324 100% | 200,248 (32.0%) | 201,617 (32.2%) | 148,438 (23.7%) | 142,976 (22.9%) |
+| **Packed DAWG**                | **179,452 (28.7%)** | 110,481 (17.7%) | **109,311 (17.5%)** | 103,000 (16.5%) | 104,568 (16.7%) |
+
+Takeaways:
+
+- **The packed DAWG on its own (28.7%) is smaller than zip or gzip of the
+  word list (32-39%)** - and unlike a zip file, it can be searched directly,
+  with no decompression step and no need to expand the dictionary in memory.
+- **The DAWG still compresses well.** Its text form has plenty of repeated
+  suffix fragments, so gzip shrinks it by another 39%. Since web servers
+  typically gzip (or brotli) text in transit, 17.5% is the realistic
+  download size - about **46% smaller than the gzipped alphabetical word
+  list** (109 KB vs 202 KB), and 24% smaller than even `xz -9e` on the word
+  list.
+- Sorting the word list alphabetically helps every compressor, because
+  shared prefixes land next to each other - but a DAWG goes further by also
+  sharing common suffixes.
+
+The [demo site](https://mckoss.github.io/dawg/) shows the same gzip
+comparison, computed in the browser, for any word list you enter.
+
+_Measured with `zip -9`, `xz -9e`, and Node's `zlib` for gzip (level 9) and
+brotli (quality 11, 16 MB window)._
+
 # Packed Trie Encoding Format
 
 A Packed Trie is an encoding of a textual Trie using 7-bit ascii. None of
