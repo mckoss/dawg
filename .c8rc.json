@@ -1,0 +1,7 @@
+{
+  "all": true,
+  "src": ["src"],
+  "include": ["lib/**/*.js"],
+  "exclude": ["lib/test/**"],
+  "reporter": ["text", "lcov"]
+}

@@ -23,44 +23,39 @@
     }
 
 */
-import * as fs from 'fs';
-
 import { Trie } from './trie';
 import { readFile } from './file-util';
 
+const USAGE = "Usage: dawg-lookup dictionary.txt > dictionary.dawg";
+
 // Command-line argument processing.
-function main(args: string[]) {
+async function main(args: string[]) {
   if (args.length !== 1) {
-    throw new Error("Usage: dawg-lookup dictionary.txt > dictionary.dawg");
+    throw new Error(USAGE);
   }
 
-  compressDictionaryFile(args[0])
-    .then((packed) => {
-      process.stdout.write(packed + '\n');
-    });
+  let packed = await compressDictionaryFile(args[0]);
+  process.stdout.write(packed + '\n');
 }
 
-// Pack a single file and write to standard output.
-function compressDictionaryFile(path: string): Promise<string> {
-  return readFile(path)
-    .then((data) => {
-      let trie = new Trie(data);
-      let packed = trie.pack();
+// Pack a single file and return the packed string.
+async function compressDictionaryFile(path: string): Promise<string> {
+  let data = await readFile(path);
+  let trie = new Trie(data);
+  let packed = trie.pack();
 
-      console.error('Compressed ' + trie.wordCount + ' words.');
-      console.error('Input size: ' + data.length + ' bytes.');
-      console.error('Compressed size: ' + packed.length + ' bytes.');
+  console.error('Compressed ' + trie.wordCount + ' words.');
+  console.error('Input size: ' + data.length + ' bytes.');
+  console.error('Compressed size: ' + packed.length + ' bytes.');
 
-      return packed;
-    });
+  return packed;
 }
 
 // Call main() if run from command line (as opposed to being required).
 if (require.main === module) {
-  try {
-    main(process.argv.slice(2));
-  } catch (e) {
-    console.error(e.message);
-    process.exit();
-  }
+  main(process.argv.slice(2))
+    .catch((e: Error) => {
+      console.error(e.message);
+      process.exit(1);
+    });
 }

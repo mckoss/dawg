@@ -9,8 +9,12 @@
   To use a packed (compressed) version of the trie stored as a string:
 
   compressed = trie.pack();
-  ptrie = new PackedTrie(compressed);
+  ptrie = new PTrie(compressed);
   bool = ptrie.isWord(word)
+
+  Words must be added in sorted order: insertWords() sorts each batch, but
+  words in a later batch must sort after all words previously inserted.
+  Once the Trie has been optimized (or packed), no more words may be added.
 
 */
 import * as ptrie from './ptrie';
@@ -30,31 +34,45 @@ export class Trie {
   cNext = 1;
   wordCount = 0;
   vCur = 0;
+  optimized = false;
+  packed?: string;
 
   constructor(words?: string | string[]) {
     this.insertWords(words);
   }
 
   // Insert words from one big string, or from an array.
+  // The input array is not modified.
   insertWords(words?: string | string[]) {
-    let i;
-
     if (words === undefined) {
       return;
     }
     if (typeof words === 'string') {
       words = words.split(/[^a-zA-Z]+/);
     }
-    for (i = 0; i < words.length; i++) {
-      words[i] = words[i].toLowerCase();
-    }
+    words = words
+      .map((word) => word.toLowerCase())
+      .filter((word) => word !== '');
     unique(words);
-    for (i = 0; i < words.length; i++) {
-      this.insert(words[i]);
+    for (let word of words) {
+      this.insert(word);
     }
   }
 
+  // Insert a single word.  Words must be inserted in sorted order, since
+  // suffixes of previous words are shared (frozen) as insertion proceeds.
   insert(word: string) {
+    if (this.optimized) {
+      throw new Error("Cannot insert '" + word +
+                      "' after the Trie has been optimized or packed.");
+    }
+    if (word < this.lastWord) {
+      throw new Error("Words must be inserted in sorted order: '" + word +
+                      "' is before '" + this.lastWord + "'.");
+    }
+    if (word === this.lastWord) {
+      return;
+    }
     this._insert(word, this.root);
     let lastWord = this.lastWord;
     this.lastWord = word;
@@ -71,7 +89,6 @@ export class Trie {
   }
 
   _insert(word: string, node: Node) {
-    let i: number;
     let prefix: string;
     let next: Node;
     let prop: string;
@@ -82,10 +99,7 @@ export class Trie {
     }
 
     // Do any existing props share a common prefix?
-    for (prop in node) {
-      if (!node.hasOwnProperty(prop)) {
-        continue;
-      }
+    for (prop of Object.keys(node)) {
       prefix = commonPrefix(word, prop);
       if (prefix.length === 0) {
         continue;
@@ -101,7 +115,7 @@ export class Trie {
       }
       next = new Node();
       next.setChild(prop.slice(prefix.length), node.child(prop));
-      this.addTerminal(next, word = word.slice(prefix.length));
+      this.addTerminal(next, word.slice(prefix.length));
 
       node.deleteChild(prop);
       node.setChild(prefix, next);
@@ -130,8 +144,13 @@ export class Trie {
     this.addTerminal(next, prop.slice(1));
   }
 
+  // Share common suffixes and collapse chains of singleton nodes.  Safe to
+  // call more than once; no words may be inserted afterwards.
   optimize() {
-    let scores = [];
+    if (this.optimized) {
+      return;
+    }
+    this.optimized = true;
 
     this.combineSuffixNode(this.root);
     this.prepDFS();
@@ -141,14 +160,14 @@ export class Trie {
   }
 
   // Convert Trie to a DAWG by sharing identical nodes
-  combineSuffixNode(node: Node) {
+  combineSuffixNode(node: Node): Node {
     // Frozen node - can't change.
     if (node._c) {
       return node;
     }
     // Make sure all children are combined and generate unique node
     // signature for this node.
-    let sig = [];
+    let sig: (string | number)[] = [];
     if (node.isTerminal()) {
       sig.push('!');
     }
@@ -179,11 +198,12 @@ export class Trie {
     this.vCur++;
   }
 
-  visited(node: Node) {
+  visited(node: Node): boolean {
     if (node._v === this.vCur) {
       return true;
     }
     node._v = this.vCur;
+    return false;
   }
 
   countDegree(node: Node) {
@@ -303,7 +323,9 @@ export class Trie {
   // Terminal strings (those without child node references) are
   // separated by ',' characters.
   pack(): string {
-    let self = this;
+    if (this.packed !== undefined) {
+      return this.packed;
+    }
     let nodes: Node[] = [];
     let nodeCount: number;
     let syms: {[i: string]: string} = {};
@@ -337,7 +359,7 @@ export class Trie {
         let ref = toAlphaCode(node._n - child._n - 1 + symCount);
         // Large reference to smaller string suffix -> duplicate suffix
         if (child._g && ref.length >= child._g.length &&
-            node.isTerminalString(child._g)) {
+            child.isTerminalString(child._g)) {
           ref = child._g;
           line += sep + prop + ref;
           sep = ptrie.STRING_SEP;
@@ -366,8 +388,8 @@ export class Trie {
     let histAbs = new Histogram();
     let histRel = new Histogram();
 
-    function analyzeRefs(node: Node) {
-      if (self.visited(node)) {
+    const analyzeRefs = (node: Node) => {
+      if (this.visited(node)) {
         return;
       }
       let props = node.props(true);
@@ -384,7 +406,7 @@ export class Trie {
         histAbs.add(child._n, toAlphaCode(ref).length - 1);
         analyzeRefs(child);
       }
-    }
+    };
 
     function symbolCount(): [number, [string, number][]] {
       let topNodes = histAbs.highest(BASE);
@@ -425,7 +447,6 @@ export class Trie {
     analyzeRefs(this.root);
 
     let [symCount, topNodes] = symbolCount();
-    let symDefs = [];
 
     for (let sym = 0; sym < symCount; sym++) {
       syms[topNodes[sym][0]] = toAlphaCode(sym);
@@ -444,7 +465,8 @@ export class Trie {
                                     parseInt(topNodes[sym][0], 10) - 1));
     }
 
-    return nodeLines.join(ptrie.NODE_SEP);
+    this.packed = nodeLines.join(ptrie.NODE_SEP);
+    return this.packed;
   }
 }
 

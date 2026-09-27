@@ -14,53 +14,31 @@
 */
 export class Node {
   // A unique name for the node (starting from 1), used in combining Suffixes.
-  _c: number;
+  _c!: number;
 
   // Created when packing the Trie, the sequential node number (in pre-order
   // traversal).
-  _n: number;
+  _n!: number;
 
   // The number of times a node is shared (it's in-degree from other nodes).
-  _d: number;
+  _d?: number;
 
   // For singleton nodes, the name of it's single property.
-  _g: string;
+  _g?: string;
 
-  // TODO: Remove after complete refactor - no needed with Walker.
-  _v: number;
-
-  // Number of child properties.
-  _p = 0;
+  // Visit marker used by Trie depth-first traversals.
+  _v?: number;
 
   child(prop: string): Node | number {
     return (this as any as {[prop: string]: Node | number})[prop];
   }
 
   setChild(prop: string, value: Node | number) {
-    const self = this as any as {[prop: string]: Node | number};
-    if (prop !== this._g) {
-      // delete self._g;
-    }
-    if (self[prop] !== undefined) {
-      this._p += 1;
-    }
-    if (this._p === 1) {
-      // this._g = prop;
-    }
-
-    self[prop] = value;
+    (this as any as {[prop: string]: Node | number})[prop] = value;
   }
 
   deleteChild(prop: string) {
-    const self = this as any as {[prop: string]: Node | number};
-    if (prop === this._g) {
-      // delete this._g;
-    }
-    this._p -= 1;
-    delete self[prop];
-    if (this._p === 1) {
-      // this._g = this.props()[0];
-    }
+    delete (this as any as {[prop: string]: Node | number})[prop];
   }
 
   // A property is a terminal string
@@ -78,13 +56,9 @@ export class Node {
   // Use nodesOnly === true to return only properties of child nodes (not
   // terminal strings).
   props(nodesOnly?: boolean): string[] {
-    let me: {[prop: string]: Node | number} = this as any;
     let props: string[] = [];
 
-    for (let prop in me) {
-      if (!me.hasOwnProperty(prop)) {
-        continue;
-      }
+    for (let prop of Object.keys(this)) {
       if (prop !== '' && prop[0] !== '_') {
         if (!nodesOnly || Node.isNode(this.child(prop))) {
           props.push(prop);
@@ -95,82 +69,8 @@ export class Node {
     return props;
   }
 
-  // Compute in-degree of all nodes and mark the
-  // singleton nodes.
-  static countDegree(root: Node) {
-    let walker = new Walker(root);
-
-    walker.dfs((order, node) => {
-      if (order === 'post') {
-        return;
-      }
-      if (node._d === undefined) {
-        node._d = 0;
-      }
-      node._d++;
-    });
-  }
-
-  // Node has just a single (non-special) property.
-  isSingleton(): boolean {
-    return this._p === 1 && !this.isTerminal();
-  }
-
   // This function can be used as a Type Guard (TypeScript)
-  static isNode(n: number | Node): n is Node {
+  static isNode(n: number | Node | undefined): n is Node {
     return n instanceof Node;
-  }
-}
-
-export type WalkOrder = 'pre' | 'post';
-export type WalkHandler = (order: WalkOrder,
-                           node: Node,
-                           parent: Node | null,
-                           prop: string) => void;
-
-export class Walker {
-  visitMap = new Map<Node, boolean>();
-
-  constructor(public root: Node) {/*_*/}
-
-  reset(): Walker {
-    this.visitMap = new Map();
-    return this;
-  }
-
-  visit(node: Node) {
-    this.visitMap.set(node, true);
-  }
-
-  visited(node: Node): boolean {
-    return this.visitMap.get(node) || false;
-  }
-
-  dfs(handler: WalkHandler) {
-    this.reset();
-    this._dfs(this.root, null, '', handler);
-  }
-
-  // Depth-first search via callback handler.
-  private _dfs(node: Node,
-               parent: Node | null,
-               propParent: string,
-               handler: WalkHandler) {
-    // The handler can be called multiple times from different parents
-    // since Nodes can form a multi-graph.
-    handler('pre', node, parent, propParent);
-
-    if (this.visited(node)) {
-      return;
-    }
-
-    this.visit(node);
-
-    let props = node.props(true);
-    for (let prop of props) {
-      this._dfs(node.child(prop) as Node, node, prop, handler);
-    }
-
-    handler('post', node, parent, propParent);
   }
 }

@@ -5,7 +5,6 @@ export const STRING_SEP = ',';
 export const TERMINAL_PREFIX = '!';
 export const MIN_LETTER = 'a';
 export const MAX_LETTER = 'z';
-export const MAX_WORD = new Array(10).join(MAX_LETTER);
 
 const reNodePart = new RegExp('([' + MIN_LETTER + '-' + MAX_LETTER +
                               ']+)(' + STRING_SEP + '|[0-9A-Z]+|$)', 'g');
@@ -65,8 +64,10 @@ export class PTrie {
     this.nodes.splice(0, this.symCount);
   }
 
-  // Is word in the dictionary (exact match).
+  // Is word in the dictionary (exact match).  Like Trie, which lowercases
+  // the dictionary, lookups are case-insensitive.
   isWord(word: string): boolean {
+    word = word.toLowerCase();
     if (word === '') {
       return false;
     }
@@ -85,11 +86,13 @@ export class PTrie {
   // Return all entries that match a prefix of word (in order of increasing
   // length.
   matches(word: string): string[] {
+    word = word.toLowerCase();
     return this.words(word, word + MIN_LETTER);
   }
 
   // Return all entries that begin with a prefix.
   completions(prefix: string, limit?: number): string[] {
+    prefix = prefix.toLowerCase();
     return this.words(prefix, beyond(prefix), limit);
   }
 
@@ -115,7 +118,6 @@ export class PTrie {
 
   private enumerate(inode: number, prefix: string, ctx: Context) {
     let node = this.nodes[inode];
-    let cont = true;
 
     function emit(word: string) {
       if (ctx.prefixes) {
@@ -176,7 +178,8 @@ export class PTrie {
 // any string which is prefixed with s.
 function beyond(s: string): string {
   if (s.length === 0) {
-    return MAX_WORD;
+    // All words sort before the character following MAX_LETTER.
+    return String.fromCharCode(MAX_LETTER.charCodeAt(0) + 1);
   }
   let code = s.charCodeAt(s.length - 1);
   return s.slice(0, -1) + String.fromCharCode(code + 1);
