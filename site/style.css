@@ -143,6 +143,40 @@ textarea:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
 }
 .stats b { color: var(--text); font-variant-numeric: tabular-nums; }
 
+.compare { max-width: 1200px; margin: 20px auto 0; }
+.compare h2 { margin: 0; font-size: 15px; }
+.compare .note { margin: 2px 0 8px; color: var(--muted); font-size: 13px; }
+.compare table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.compare th {
+  width: 1%;
+  padding: 3px 12px 3px 0;
+  text-align: left;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.compare td { padding: 3px 0; }
+.compare td.num {
+  width: 1%;
+  padding-left: 12px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.compare .pct { color: var(--muted); display: inline-block; min-width: 4.5em; }
+.bar {
+  height: 12px;
+  min-width: 2px;
+  border-radius: 3px;
+  background: var(--muted);
+  opacity: 0.55;
+}
+.bar.dawg { background: var(--accent); opacity: 1; }
+.bar.best { background: var(--good); opacity: 1; }
+
+@media (max-width: 520px) {
+  .compare th { white-space: normal; width: 30%; }
+}
+
 .lookup { margin-top: 20px; }
 .lookup label { display: block; font-weight: 600; margin-bottom: 4px; }
 .lookup input {
