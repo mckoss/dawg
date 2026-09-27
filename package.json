@@ -19,7 +19,7 @@
   "scripts": {
     "clean": "rm -rf lib coverage _site",
     "build": "rm -rf lib && tsc && chmod +x lib/dawg.js",
-    "build:site": "tsc -p site && rm -rf _site && esbuild site/app.ts --bundle --minify --target=es2019 --outfile=_site/app.js && cp site/index.html site/style.css src/test/data/ospd3.txt _site/",
+    "build:site": "tsc -p site && node site/build.mjs",
     "serve:site": "npm run build:site && npx --yes http-server _site -p 8080 -c-1",
     "lint": "eslint .",
     "pretest": "npm run build",
